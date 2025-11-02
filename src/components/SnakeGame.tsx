@@ -43,9 +43,11 @@ export default function SnakeGame() {
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
   const [isInverted, setIsInverted] = useState(false);
   const [scoreMultiplier, setScoreMultiplier] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const directionRef = useRef(direction);
   const isPlayingRef = useRef(isPlaying);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     directionRef.current = direction;
@@ -301,6 +303,27 @@ export default function SnakeGame() {
     }
   };
 
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      await containerRef.current.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   if (!controlMode) {
     return (
       <Card className="p-8 border-gradient text-center space-y-6 animate-fade-in">
@@ -347,7 +370,17 @@ export default function SnakeGame() {
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className={isFullscreen ? "fixed inset-0 bg-background z-50 flex flex-col items-center justify-center p-4" : "space-y-6"}>
+      {isFullscreen && (
+        <button
+          onClick={toggleFullscreen}
+          className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground flex items-center justify-center shadow-lg transition-all hover:scale-110"
+          title="Закрыть полноэкранный режим"
+        >
+          <Icon name="X" className="w-5 h-5" />
+        </button>
+      )}
+
       <Card className="p-6 border-gradient">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-1">
@@ -376,14 +409,26 @@ export default function SnakeGame() {
                 Пауза
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={resetGame}
-              title="Сменить устройство"
-            >
-              <Icon name="Settings" className="w-4 h-4" />
-            </Button>
+            {!isFullscreen && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleFullscreen}
+                  title="Полноэкранный режим"
+                >
+                  <Icon name="Maximize2" className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={resetGame}
+                  title="Сменить устройство"
+                >
+                  <Icon name="Settings" className="w-4 h-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -514,23 +559,25 @@ export default function SnakeGame() {
         </Card>
       )}
 
-      <Card className="p-4 border-gradient">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Icon name="Sparkles" className="w-4 h-4 text-primary" />
-          Бонусы
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {CANDY_TYPES.map((candyType) => (
-            <div
-              key={candyType.type}
-              className="flex items-center gap-2 p-2 rounded bg-muted/50 text-xs"
-            >
-              <span className="text-base">{candyType.emoji}</span>
-              <span>{candyType.name}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {!isFullscreen && (
+        <Card className="p-4 border-gradient">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <Icon name="Sparkles" className="w-4 h-4 text-primary" />
+            Бонусы
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {CANDY_TYPES.map((candyType) => (
+              <div
+                key={candyType.type}
+                className="flex items-center gap-2 p-2 rounded bg-muted/50 text-xs"
+              >
+                <span className="text-base">{candyType.emoji}</span>
+                <span>{candyType.name}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
