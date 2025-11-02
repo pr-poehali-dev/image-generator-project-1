@@ -6,7 +6,9 @@ import { toast } from "sonner";
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
-const INITIAL_SPEED = 150;
+const INITIAL_SPEED = 250;
+const MIN_SPEED = 80;
+const SPEED_DECREASE = 5;
 
 type Position = { x: number; y: number };
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
@@ -36,6 +38,7 @@ export default function SnakeGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [speed, setSpeed] = useState(INITIAL_SPEED);
+  const [baseSpeed, setBaseSpeed] = useState(INITIAL_SPEED);
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
   const [isInverted, setIsInverted] = useState(false);
   const [scoreMultiplier, setScoreMultiplier] = useState(1);
@@ -78,6 +81,7 @@ export default function SnakeGame() {
     setScore(0);
     setGameOver(false);
     setSpeed(INITIAL_SPEED);
+    setBaseSpeed(INITIAL_SPEED);
     setActiveEffect(null);
     setIsInverted(false);
     setScoreMultiplier(1);
@@ -98,14 +102,14 @@ export default function SnakeGame() {
       case "speed":
         setSpeed((s) => Math.max(50, s - 50));
         setTimeout(() => {
-          setSpeed(INITIAL_SPEED);
+          setSpeed(baseSpeed);
           setActiveEffect(null);
         }, 5000);
         break;
       case "slow":
         setSpeed((s) => s + 50);
         setTimeout(() => {
-          setSpeed(INITIAL_SPEED);
+          setSpeed(baseSpeed);
           setActiveEffect(null);
         }, 5000);
         break;
@@ -175,6 +179,15 @@ export default function SnakeGame() {
         setScore((s) => s + (10 * scoreMultiplier));
         setFood(generateRandomPosition());
         generateCandy();
+        
+        setBaseSpeed((currentSpeed) => {
+          const newSpeed = Math.max(MIN_SPEED, currentSpeed - SPEED_DECREASE);
+          if (!activeEffect || activeEffect === "double" || activeEffect === "shrink") {
+            setSpeed(newSpeed);
+          }
+          return newSpeed;
+        });
+        
         return newSnake;
       }
 
@@ -249,6 +262,7 @@ export default function SnakeGame() {
     setScore(0);
     setGameOver(false);
     setSpeed(INITIAL_SPEED);
+    setBaseSpeed(INITIAL_SPEED);
     setActiveEffect(null);
     setIsInverted(false);
     setScoreMultiplier(1);
