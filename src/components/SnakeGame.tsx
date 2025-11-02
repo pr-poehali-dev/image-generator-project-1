@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { toast } from "sonner";
 import SnakeMultiplayer from "@/components/SnakeMultiplayer";
+import SnakeShop from "@/components/SnakeShop";
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
@@ -30,8 +31,11 @@ const CANDY_TYPES = [
 ];
 
 export default function SnakeGame() {
+  const [playerId] = useState(() => `player_${Date.now()}_${Math.random()}`);
+  const [showShop, setShowShop] = useState(false);
   const [gameMode, setGameMode] = useState<"classic" | "multiplayer" | null>(null);
   const [controlMode, setControlMode] = useState<"keyboard" | "touch" | null>(null);
+  const [activeSkin, setActiveSkin] = useState(1);
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }]);
   const [direction, setDirection] = useState<Direction>("RIGHT");
   const [food, setFood] = useState<Position>({ x: 15, y: 15 });
@@ -96,7 +100,17 @@ export default function SnakeGame() {
     setScoreMultiplier(1);
     setGameMode(null);
     setControlMode(null);
+    setShowShop(false);
   }, [generateRandomPosition]);
+
+  const saveCoins = useCallback(async (finalScore: number) => {
+    const coins = finalScore;
+    await fetch("https://functions.poehali.dev/85bcafb3-5dbf-4499-9c79-8380334f4937", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "addCoins", playerId, amount: coins, score: finalScore }),
+    });
+  }, [playerId]);
 
   const applyEffect = useCallback((type: Candy["type"]) => {
     const candyInfo = CANDY_TYPES.find((c) => c.type === type);
@@ -176,6 +190,7 @@ export default function SnakeGame() {
       ) {
         setGameOver(true);
         setIsPlaying(false);
+        saveCoins(score);
         if (score > highScore) {
           setHighScore(score);
           toast.success("Новый рекорд! 🏆");
@@ -327,6 +342,16 @@ export default function SnakeGame() {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  if (showShop) {
+    return (
+      <SnakeShop
+        playerId={playerId}
+        onBack={() => setShowShop(false)}
+        onSkinChange={(skinId) => setActiveSkin(skinId)}
+      />
+    );
+  }
+
   if (!gameMode) {
     return (
       <Card className="p-8 border-gradient text-center space-y-6 animate-fade-in">
@@ -366,6 +391,13 @@ export default function SnakeGame() {
             </div>
           </button>
         </div>
+        <Button
+          onClick={() => setShowShop(true)}
+          className="w-full bg-gradient-to-r from-primary to-secondary"
+        >
+          <Icon name="ShoppingBag" className="w-4 h-4 mr-2" />
+          Магазин скинов
+        </Button>
       </Card>
     );
   }
