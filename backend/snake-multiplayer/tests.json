@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Join game",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "join",
+        "playerId": "player1"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get game state",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "gridSize": 40
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

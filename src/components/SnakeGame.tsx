@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { toast } from "sonner";
+import SnakeMultiplayer from "@/components/SnakeMultiplayer";
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
@@ -29,6 +30,7 @@ const CANDY_TYPES = [
 ];
 
 export default function SnakeGame() {
+  const [gameMode, setGameMode] = useState<"classic" | "multiplayer" | null>(null);
   const [controlMode, setControlMode] = useState<"keyboard" | "touch" | null>(null);
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }]);
   const [direction, setDirection] = useState<Direction>("RIGHT");
@@ -92,6 +94,7 @@ export default function SnakeGame() {
     setActiveEffect(null);
     setIsInverted(false);
     setScoreMultiplier(1);
+    setGameMode(null);
     setControlMode(null);
   }, [generateRandomPosition]);
 
@@ -323,6 +326,98 @@ export default function SnakeGame() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  if (!gameMode) {
+    return (
+      <Card className="p-8 border-gradient text-center space-y-6 animate-fade-in">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold">Выбери режим игры</h2>
+          <p className="text-muted-foreground">Играй один или соревнуйся с другими!</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <button
+            onClick={() => setGameMode("classic")}
+            className="p-8 rounded-xl border-2 border-border hover:border-primary transition-all hover:scale-105 group bg-muted/50 hover:bg-primary/10"
+          >
+            <div className="space-y-3">
+              <div className="text-5xl">🎮</div>
+              <div className="text-xl font-bold">Классика</div>
+              <div className="text-sm text-muted-foreground">Одиночная игра</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                • Стандартное поле<br />
+                • Стены смертельны<br />
+                • Бонусы и рекорды
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setGameMode("multiplayer")}
+            className="p-8 rounded-xl border-2 border-border hover:border-primary transition-all hover:scale-105 group bg-muted/50 hover:bg-primary/10"
+          >
+            <div className="space-y-3">
+              <div className="text-5xl">👥</div>
+              <div className="text-xl font-bold">Мультиплеер</div>
+              <div className="text-sm text-muted-foreground">Онлайн битва</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                • Большое поле<br />
+                • Телепорт через стены<br />
+                • Игра с другими
+              </div>
+            </div>
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
+  if (gameMode === "multiplayer" && !controlMode) {
+    return (
+      <Card className="p-8 border-gradient text-center space-y-6 animate-fade-in">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold">Выбери устройство</h2>
+          <p className="text-muted-foreground">Как ты будешь управлять змейкой?</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <button
+            onClick={() => setControlMode("keyboard")}
+            className="p-8 rounded-xl border-2 border-border hover:border-primary transition-all hover:scale-105 group bg-muted/50 hover:bg-primary/10"
+          >
+            <div className="space-y-3">
+              <div className="text-5xl">💻</div>
+              <div className="text-xl font-bold">Компьютер</div>
+              <div className="text-sm text-muted-foreground">Управление клавишами</div>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <kbd className="px-2 py-1 bg-background rounded text-xs">↑</kbd>
+                <kbd className="px-2 py-1 bg-background rounded text-xs">↓</kbd>
+                <kbd className="px-2 py-1 bg-background rounded text-xs">←</kbd>
+                <kbd className="px-2 py-1 bg-background rounded text-xs">→</kbd>
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setControlMode("touch")}
+            className="p-8 rounded-xl border-2 border-border hover:border-primary transition-all hover:scale-105 group bg-muted/50 hover:bg-primary/10"
+          >
+            <div className="space-y-3">
+              <div className="text-5xl">📱</div>
+              <div className="text-xl font-bold">Телефон</div>
+              <div className="text-sm text-muted-foreground">Управление кнопками</div>
+              <div className="flex items-center justify-center gap-1 pt-2">
+                <Icon name="ArrowUp" className="w-5 h-5 text-primary" />
+                <Icon name="ArrowDown" className="w-5 h-5 text-primary" />
+                <Icon name="ArrowLeft" className="w-5 h-5 text-primary" />
+                <Icon name="ArrowRight" className="w-5 h-5 text-primary" />
+              </div>
+            </div>
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
+  if (gameMode === "multiplayer" && controlMode) {
+    return <SnakeMultiplayer controlMode={controlMode} onBack={resetGame} />;
+  }
 
   if (!controlMode) {
     return (
