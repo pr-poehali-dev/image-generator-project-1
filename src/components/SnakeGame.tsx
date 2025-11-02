@@ -410,24 +410,14 @@ export default function SnakeGame() {
               </Button>
             )}
             {!isFullscreen && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleFullscreen}
-                  title="Полноэкранный режим"
-                >
-                  <Icon name="Maximize2" className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={resetGame}
-                  title="Сменить устройство"
-                >
-                  <Icon name="Settings" className="w-4 h-4" />
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={resetGame}
+                title="Сменить устройство"
+              >
+                <Icon name="Settings" className="w-4 h-4" />
+              </Button>
             )}
           </div>
         </div>
