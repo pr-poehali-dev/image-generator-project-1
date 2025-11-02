@@ -1,34 +1,58 @@
-import Navigation from "@/components/Navigation";
-import Hero from "@/components/Hero";
-import Generator from "@/components/Generator";
-import Gallery from "@/components/Gallery";
+import SnakeGame from "@/components/SnakeGame";
+import Icon from "@/components/ui/icon";
 
 export default function Index() {
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="pt-16">
-        <Hero />
-        <Generator />
-        <Gallery />
-      </main>
-      
-      <footer className="border-t border-border/50 py-12 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 text-xl font-bold">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-white">✨</span>
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <span className="text-2xl">🐍</span>
             </div>
-            <span className="text-gradient">AI Gallery</span>
+            <h1 className="text-5xl font-bold text-gradient">Змейка</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Создавайте уникальные изображения с помощью искусственного интеллекта
+          <p className="text-xl text-muted-foreground">
+            Классическая игра с бонусами и случайными эффектами
           </p>
-          <div className="text-xs text-muted-foreground">
-            © 2024 AI Gallery. Все права защищены.
+        </div>
+
+        <SnakeGame />
+
+        <div className="text-center space-y-4 pt-8">
+          <h2 className="text-2xl font-bold">Как играть?</h2>
+          <div className="grid md:grid-cols-3 gap-4 text-sm">
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="text-3xl">🎮</div>
+              <div className="font-semibold">Управление</div>
+              <div className="text-muted-foreground">
+                Стрелки или WASD для движения змейки
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="text-3xl">🍎</div>
+              <div className="font-semibold">Цель</div>
+              <div className="text-muted-foreground">
+                Собирай еду и расти, не врезайся в стены и себя
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="text-3xl">🍬</div>
+              <div className="font-semibold">Бонусы</div>
+              <div className="text-muted-foreground">
+                Собирай конфеты для случайных эффектов
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+
+        <footer className="border-t border-border/50 pt-8 text-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2">
+            <Icon name="Gamepad2" className="w-4 h-4" />
+            <span>Сделано с любовью к классике</span>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
