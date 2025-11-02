@@ -9,6 +9,7 @@ const CELL_SIZE = 20;
 const INITIAL_SPEED = 250;
 const MIN_SPEED = 80;
 const SPEED_DECREASE = 5;
+const SAFE_MARGIN = 2;
 
 type Position = { x: number; y: number };
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
@@ -56,22 +57,26 @@ export default function SnakeGame() {
 
   const generateRandomPosition = useCallback(() => {
     return {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
+      x: SAFE_MARGIN + Math.floor(Math.random() * (GRID_SIZE - SAFE_MARGIN * 2)),
+      y: SAFE_MARGIN + Math.floor(Math.random() * (GRID_SIZE - SAFE_MARGIN * 2)),
     };
   }, []);
 
   const generateCandy = useCallback(() => {
     if (Math.random() > 0.7) {
       const candyType = CANDY_TYPES[Math.floor(Math.random() * CANDY_TYPES.length)];
+      const position = {
+        x: SAFE_MARGIN + Math.floor(Math.random() * (GRID_SIZE - SAFE_MARGIN * 2)),
+        y: SAFE_MARGIN + Math.floor(Math.random() * (GRID_SIZE - SAFE_MARGIN * 2)),
+      };
       setCandy({
-        position: generateRandomPosition(),
+        position,
         type: candyType.type,
         emoji: candyType.emoji,
         color: candyType.color,
       });
     }
-  }, [generateRandomPosition]);
+  }, []);
 
   const resetGame = useCallback(() => {
     setSnake([{ x: 10, y: 10 }]);
