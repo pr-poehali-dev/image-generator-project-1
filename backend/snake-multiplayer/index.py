@@ -39,8 +39,8 @@ COLORS = ['#F97316', '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#EC4899']
 
 def generate_random_position() -> Position:
     return Position(
-        x=SAFE_MARGIN + random.randint(0, GRID_SIZE - SAFE_MARGIN * 2 - 1),
-        y=SAFE_MARGIN + random.randint(0, GRID_SIZE - SAFE_MARGIN * 2 - 1)
+        x=random.randint(0, GRID_SIZE - 1),
+        y=random.randint(0, GRID_SIZE - 1)
     )
 
 def wrap_position(pos: Position) -> Position:
