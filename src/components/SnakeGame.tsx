@@ -452,42 +452,45 @@ export default function SnakeGame() {
       </Card>
 
       {controlMode === "touch" && isPlaying && (
-        <Card className="p-4 border-gradient">
-          <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-            <div></div>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleDirectionChange("UP")}
-              className="h-16 border-2 hover:border-primary hover:bg-primary/20"
-            >
-              <Icon name="ArrowUp" className="w-6 h-6" />
-            </Button>
-            <div></div>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleDirectionChange("LEFT")}
-              className="h-16 border-2 hover:border-primary hover:bg-primary/20"
-            >
-              <Icon name="ArrowLeft" className="w-6 h-6" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleDirectionChange("DOWN")}
-              className="h-16 border-2 hover:border-primary hover:bg-primary/20"
-            >
-              <Icon name="ArrowDown" className="w-6 h-6" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleDirectionChange("RIGHT")}
-              className="h-16 border-2 hover:border-primary hover:bg-primary/20"
-            >
-              <Icon name="ArrowRight" className="w-6 h-6" />
-            </Button>
+        <Card className="p-6 border-gradient bg-gradient-to-br from-muted/30 to-muted/10">
+          <div className="relative w-48 h-48 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-xl" />
+            
+            <div className="relative w-full h-full rounded-full bg-muted/80 backdrop-blur-sm border-4 border-primary/30 shadow-2xl flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/40 to-secondary/40 border-2 border-primary/50" />
+              
+              <button
+                onClick={() => handleDirectionChange("UP")}
+                className="absolute top-2 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-secondary shadow-lg active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
+              >
+                <Icon name="ChevronUp" className="w-7 h-7 text-white" />
+              </button>
+              
+              <button
+                onClick={() => handleDirectionChange("DOWN")}
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-secondary shadow-lg active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
+              >
+                <Icon name="ChevronDown" className="w-7 h-7 text-white" />
+              </button>
+              
+              <button
+                onClick={() => handleDirectionChange("LEFT")}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-secondary shadow-lg active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
+              >
+                <Icon name="ChevronLeft" className="w-7 h-7 text-white" />
+              </button>
+              
+              <button
+                onClick={() => handleDirectionChange("RIGHT")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-secondary shadow-lg active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
+              >
+                <Icon name="ChevronRight" className="w-7 h-7 text-white" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="text-center mt-4 text-xs text-muted-foreground">
+            Используй джойстик для управления
           </div>
         </Card>
       )}
