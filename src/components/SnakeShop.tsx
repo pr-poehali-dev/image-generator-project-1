@@ -36,6 +36,7 @@ export default function SnakeShop({ playerId, onBack, onSkinChange }: Props) {
   const [skins, setSkins] = useState<Skin[]>([]);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const loadShopData = async () => {
     setLoading(true);
@@ -85,6 +86,14 @@ export default function SnakeShop({ playerId, onBack, onSkinChange }: Props) {
     }
   };
 
+  const nextSkin = () => {
+    setCurrentIndex((prev) => (prev + 1) % skins.length);
+  };
+
+  const prevSkin = () => {
+    setCurrentIndex((prev) => (prev - 1 + skins.length) % skins.length);
+  };
+
   if (loading) {
     return (
       <Card className="p-8 text-center">
@@ -93,122 +102,198 @@ export default function SnakeShop({ playerId, onBack, onSkinChange }: Props) {
     );
   }
 
+  const currentSkin = skins[currentIndex];
+  const isOwned = playerData?.owned_skins.includes(currentSkin.id);
+  const isActive = playerData?.active_skin === currentSkin.id;
+  const canAfford = (playerData?.coins || 0) >= currentSkin.price;
+
   return (
     <div className="space-y-6">
-      <Card className="p-6 border-gradient">
+      <Card className="p-6 border-gradient bg-gradient-to-b from-background to-muted/30">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gradient">Магазин скинов</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Персонализируй свою змейку
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="text-3xl font-bold text-gradient">
+              {playerData?.coins || 0} 🪙
+            </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onBack}>
             <Icon name="X" className="w-5 h-5" />
           </Button>
         </div>
 
-        <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-primary/20 to-secondary/20 mb-6">
-          <div className="flex-1">
-            <div className="text-3xl font-bold text-gradient">
-              {playerData?.coins || 0} 🪙
+        <div className="relative">
+          <div 
+            className="absolute inset-0 -z-10 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+            }}
+          />
+
+          <div className="flex items-center justify-center gap-4 py-12">
+            <button
+              onClick={prevSkin}
+              className="w-16 h-16 flex items-center justify-center rounded-lg bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 transition-all hover:scale-110 shadow-lg"
+            >
+              <Icon name="ChevronLeft" className="w-8 h-8 text-white" />
+            </button>
+
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <div
+                  className="w-full aspect-video rounded-2xl flex items-center justify-center relative overflow-hidden shadow-2xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                  }}
+                >
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: 'radial-gradient(circle, rgba(80,80,100,0.3) 2px, transparent 2px)',
+                      backgroundSize: '30px 30px',
+                    }}
+                  />
+
+                  <div className="relative flex items-center justify-center gap-2">
+                    <div
+                      className="w-16 h-16 rounded-full animate-pulse"
+                      style={{
+                        background: `radial-gradient(circle, ${currentSkin.head_color}, ${currentSkin.body_color})`,
+                        boxShadow: `0 0 40px ${currentSkin.head_color}80`,
+                      }}
+                    />
+                    <div
+                      className="w-14 h-14 rounded-full"
+                      style={{
+                        background: currentSkin.body_color,
+                        boxShadow: `0 0 30px ${currentSkin.body_color}60`,
+                      }}
+                    />
+                    <div
+                      className="w-12 h-12 rounded-full"
+                      style={{
+                        background: currentSkin.body_color,
+                        boxShadow: `0 0 20px ${currentSkin.body_color}40`,
+                      }}
+                    />
+                  </div>
+
+                  {isActive && (
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-green-500 text-white text-xs font-semibold flex items-center gap-1 shadow-lg">
+                      <Icon name="Check" className="w-3 h-3" />
+                      Активен
+                    </div>
+                  )}
+                </div>
+
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {skins.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentIndex
+                          ? 'bg-primary w-8'
+                          : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center mt-8 space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                  <h2 className="text-3xl font-bold text-gradient">
+                    {currentSkin.name}
+                  </h2>
+                  {currentSkin.is_premium && (
+                    <span className="px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-semibold shadow-lg">
+                      Premium
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-muted-foreground">
+                  {currentSkin.description}
+                </p>
+
+                <div className="text-2xl font-bold text-primary">
+                  {currentSkin.price === 0 ? "Бесплатно" : `${currentSkin.price} 🪙`}
+                </div>
+
+                <div className="pt-4">
+                  {isActive ? (
+                    <div className="py-3 px-6 rounded-full bg-green-500/20 border-2 border-green-500 text-green-500 font-semibold inline-flex items-center gap-2">
+                      <Icon name="Check" className="w-5 h-5" />
+                      Экипирован
+                    </div>
+                  ) : isOwned ? (
+                    <Button
+                      size="lg"
+                      onClick={() => activateSkin(currentSkin.id)}
+                      className="px-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg text-lg"
+                    >
+                      Надеть
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      onClick={() => purchaseSkin(currentSkin.id)}
+                      disabled={!canAfford}
+                      className="px-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90 disabled:opacity-50 shadow-lg text-lg"
+                    >
+                      {canAfford ? "Купить" : "Недостаточно монет"}
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              Всего монет
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">
-              Игр сыграно: {playerData?.games_played || 0}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Общий счёт: {playerData?.total_score || 0}
-            </div>
+
+            <button
+              onClick={nextSkin}
+              className="w-16 h-16 flex items-center justify-center rounded-lg bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 transition-all hover:scale-110 shadow-lg"
+            >
+              <Icon name="ChevronRight" className="w-8 h-8 text-white" />
+            </button>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {skins.map((skin) => {
-            const isOwned = playerData?.owned_skins.includes(skin.id);
-            const isActive = playerData?.active_skin === skin.id;
-            const canAfford = (playerData?.coins || 0) >= skin.price;
-
-            return (
-              <Card
-                key={skin.id}
-                className={`p-4 transition-all ${
-                  isActive
-                    ? "border-2 border-primary bg-primary/10"
-                    : "border border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-                    style={{
-                      background: `linear-gradient(135deg, ${skin.head_color}, ${skin.body_color})`,
-                    }}
-                  >
-                    {skin.emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{skin.name}</h3>
-                      {skin.is_premium && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                          Premium
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {skin.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-semibold">
-                        {skin.price === 0 ? "Бесплатно" : `${skin.price} 🪙`}
-                      </div>
-                      {isActive ? (
-                        <div className="text-xs text-primary font-semibold flex items-center gap-1">
-                          <Icon name="Check" className="w-3 h-3" />
-                          Активен
-                        </div>
-                      ) : isOwned ? (
-                        <Button
-                          size="sm"
-                          onClick={() => activateSkin(skin.id)}
-                          className="h-7 text-xs"
-                        >
-                          Надеть
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => purchaseSkin(skin.id)}
-                          disabled={!canAfford}
-                          className="h-7 text-xs"
-                        >
-                          Купить
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+        <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-border">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gradient">
+              {playerData?.games_played || 0}
+            </div>
+            <div className="text-xs text-muted-foreground">Игр сыграно</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gradient">
+              {playerData?.total_score || 0}
+            </div>
+            <div className="text-xs text-muted-foreground">Общий счёт</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gradient">
+              {playerData?.owned_skins.length || 0}/{skins.length}
+            </div>
+            <div className="text-xs text-muted-foreground">Скинов куплено</div>
+          </div>
         </div>
       </Card>
 
-      <Card className="p-4 border-gradient">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Icon name="Info" className="w-4 h-4 text-primary" />
-          Как получить монеты?
-        </h3>
-        <ul className="text-sm text-muted-foreground space-y-1">
-          <li>• Играйте и зарабатывайте монеты за счёт</li>
-          <li>• 1 очко = 1 монета</li>
-          <li>• Собирайте еду и бонусы для большего счёта</li>
-        </ul>
+      <Card className="p-4 border-gradient bg-muted/30">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Icon name="Info" className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold mb-2">Как получить монеты?</h3>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Играйте и зарабатывайте: 1 очко = 1 монета</li>
+              <li>• Собирайте еду и конфеты для большего счёта</li>
+              <li>• Используйте бонусы для удвоения и утроения очков</li>
+            </ul>
+          </div>
+        </div>
       </Card>
     </div>
   );
