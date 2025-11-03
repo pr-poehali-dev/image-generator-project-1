@@ -82,7 +82,7 @@ export default function SnakeGame() {
   }, []);
 
   const generateCandy = useCallback(() => {
-    if (Math.random() > 0.7) {
+    if (Math.random() > 0.65) {
       const candyType = CANDY_TYPES[Math.floor(Math.random() * CANDY_TYPES.length)];
       const position = {
         x: SAFE_MARGIN + Math.floor(Math.random() * (GRID_SIZE - SAFE_MARGIN * 2)),
@@ -91,7 +91,7 @@ export default function SnakeGame() {
       setCandy({
         position,
         type: candyType.type,
-        emoji: candyType.emoji,
+        emoji: "🍬",
         color: candyType.color,
       });
     }
