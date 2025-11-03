@@ -306,9 +306,13 @@ export default function SnakeGame() {
         ArrowLeft: "LEFT",
         ArrowRight: "RIGHT",
         w: "UP",
+        W: "UP",
         s: "DOWN",
+        S: "DOWN",
         a: "LEFT",
+        A: "LEFT",
         d: "RIGHT",
+        D: "RIGHT",
       };
 
       let newDirection = keyMap[e.key];
@@ -530,11 +534,14 @@ export default function SnakeGame() {
               <div className="text-5xl">💻</div>
               <div className="text-xl font-bold">Компьютер</div>
               <div className="text-sm text-muted-foreground">Управление клавишами</div>
-              <div className="flex items-center justify-center gap-2 pt-2">
-                <kbd className="px-2 py-1 bg-background rounded text-xs">↑</kbd>
-                <kbd className="px-2 py-1 bg-background rounded text-xs">↓</kbd>
-                <kbd className="px-2 py-1 bg-background rounded text-xs">←</kbd>
-                <kbd className="px-2 py-1 bg-background rounded text-xs">→</kbd>
+              <div className="flex flex-col items-center justify-center gap-2 pt-2">
+                <div className="flex gap-2">
+                  <kbd className="px-2 py-1 bg-background rounded text-xs">W</kbd>
+                  <kbd className="px-2 py-1 bg-background rounded text-xs">A</kbd>
+                  <kbd className="px-2 py-1 bg-background rounded text-xs">S</kbd>
+                  <kbd className="px-2 py-1 bg-background rounded text-xs">D</kbd>
+                </div>
+                <div className="text-xs text-muted-foreground">или стрелки</div>
               </div>
             </div>
           </button>
