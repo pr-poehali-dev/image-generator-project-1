@@ -15,9 +15,11 @@ const SAFE_MARGIN = 2;
 
 type Position = { x: number; y: number };
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
+type CandyEffectType = "speed" | "slow" | "invert" | "double" | "shrink" | "ghost" | "freeze" | "magnet" | "rainbow" | "chaos";
+
 type Candy = {
   position: Position;
-  type: "speed" | "slow" | "invert" | "double" | "shrink";
+  type: CandyEffectType;
   emoji: string;
   color: string;
 };
@@ -28,6 +30,11 @@ const CANDY_TYPES = [
   { type: "invert" as const, emoji: "🔄", color: "#0EA5E9", name: "Инверсия" },
   { type: "double" as const, emoji: "💎", color: "#D946EF", name: "Двойные очки" },
   { type: "shrink" as const, emoji: "✂️", color: "#10B981", name: "Укорочение" },
+  { type: "ghost" as const, emoji: "👻", color: "#A855F7", name: "Призрак" },
+  { type: "freeze" as const, emoji: "❄️", color: "#06B6D4", name: "Заморозка" },
+  { type: "magnet" as const, emoji: "🧲", color: "#EF4444", name: "Магнит" },
+  { type: "rainbow" as const, emoji: "🌈", color: "#EC4899", name: "Радуга" },
+  { type: "chaos" as const, emoji: "🎲", color: "#FBBF24", name: "Хаос" },
 ];
 
 export default function SnakeGame() {
@@ -49,6 +56,10 @@ export default function SnakeGame() {
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
   const [isInverted, setIsInverted] = useState(false);
   const [scoreMultiplier, setScoreMultiplier] = useState(1);
+  const [isGhost, setIsGhost] = useState(false);
+  const [isFrozen, setIsFrozen] = useState(false);
+  const [magnetActive, setMagnetActive] = useState(false);
+  const [rainbowMode, setRainbowMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const directionRef = useRef(direction);
@@ -101,6 +112,10 @@ export default function SnakeGame() {
     setGameMode(null);
     setControlMode(null);
     setShowShop(false);
+    setIsGhost(false);
+    setIsFrozen(false);
+    setMagnetActive(false);
+    setRainbowMode(false);
   }, [generateRandomPosition]);
 
   const saveCoins = useCallback(async (finalScore: number) => {
@@ -155,11 +170,46 @@ export default function SnakeGame() {
         setSnake((s) => s.slice(0, Math.max(1, Math.floor(s.length / 2))));
         setActiveEffect(null);
         break;
+      case "ghost":
+        setIsGhost(true);
+        setTimeout(() => {
+          setIsGhost(false);
+          setActiveEffect(null);
+        }, 8000);
+        break;
+      case "freeze":
+        setIsFrozen(true);
+        setTimeout(() => {
+          setIsFrozen(false);
+          setActiveEffect(null);
+        }, 3000);
+        break;
+      case "magnet":
+        setMagnetActive(true);
+        setTimeout(() => {
+          setMagnetActive(false);
+          setActiveEffect(null);
+        }, 7000);
+        break;
+      case "rainbow":
+        setRainbowMode(true);
+        setScoreMultiplier(3);
+        setTimeout(() => {
+          setRainbowMode(false);
+          setScoreMultiplier(1);
+          setActiveEffect(null);
+        }, 8000);
+        break;
+      case "chaos":
+        const effects = ["speed", "slow", "invert", "shrink"];
+        const randomEffect = effects[Math.floor(Math.random() * effects.length)] as CandyEffectType;
+        applyEffect(randomEffect);
+        break;
     }
-  }, []);
+  }, [baseSpeed]);
 
   const moveSnake = useCallback(() => {
-    if (!isPlayingRef.current) return;
+    if (!isPlayingRef.current || isFrozen) return;
 
     setSnake((prevSnake) => {
       const head = prevSnake[0];
@@ -181,13 +231,10 @@ export default function SnakeGame() {
           break;
       }
 
-      if (
-        newHead.x < 0 ||
-        newHead.x >= GRID_SIZE ||
-        newHead.y < 0 ||
-        newHead.y >= GRID_SIZE ||
-        prevSnake.some((segment) => segment.x === newHead.x && segment.y === newHead.y)
-      ) {
+      const hitWall = newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE;
+      const hitSelf = prevSnake.some((segment) => segment.x === newHead.x && segment.y === newHead.y);
+
+      if ((hitWall || hitSelf) && !isGhost) {
         setGameOver(true);
         setIsPlaying(false);
         saveCoins(score);
@@ -196,6 +243,13 @@ export default function SnakeGame() {
           toast.success("Новый рекорд! 🏆");
         }
         return prevSnake;
+      }
+
+      if (isGhost && hitWall) {
+        if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+        if (newHead.x >= GRID_SIZE) newHead.x = 0;
+        if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+        if (newHead.y >= GRID_SIZE) newHead.y = 0;
       }
 
       const newSnake = [newHead, ...prevSnake];
@@ -222,10 +276,19 @@ export default function SnakeGame() {
         return newSnake;
       }
 
+      if (magnetActive && candy) {
+        const distance = Math.abs(newHead.x - candy.position.x) + Math.abs(newHead.y - candy.position.y);
+        if (distance <= 3) {
+          applyEffect(candy.type);
+          setCandy(null);
+          return newSnake;
+        }
+      }
+
       newSnake.pop();
       return newSnake;
     });
-  }, [food, candy, score, highScore, generateRandomPosition, generateCandy, applyEffect, scoreMultiplier]);
+  }, [food, candy, score, highScore, generateRandomPosition, generateCandy, applyEffect, scoreMultiplier, isGhost, magnetActive, saveCoins]);
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -550,9 +613,15 @@ export default function SnakeGame() {
         </div>
 
         {activeEffect && (
-          <div className="mb-4 p-2 rounded-lg bg-primary/20 text-sm text-center animate-fade-in">
-            {CANDY_TYPES.find((c) => c.type === activeEffect)?.emoji} Активен эффект:{" "}
-            {CANDY_TYPES.find((c) => c.type === activeEffect)?.name}
+          <div 
+            className="mb-4 p-3 rounded-lg text-sm text-center animate-fade-in font-semibold shadow-lg"
+            style={{
+              backgroundColor: CANDY_TYPES.find((c) => c.type === activeEffect)?.color + '20',
+              borderLeft: `4px solid ${CANDY_TYPES.find((c) => c.type === activeEffect)?.color}`,
+            }}
+          >
+            <span className="text-2xl mr-2">{CANDY_TYPES.find((c) => c.type === activeEffect)?.emoji}</span>
+            Активен эффект: {CANDY_TYPES.find((c) => c.type === activeEffect)?.name}
           </div>
         )}
 
@@ -566,7 +635,7 @@ export default function SnakeGame() {
           {snake.map((segment, index) => (
             <div
               key={index}
-              className="absolute rounded-sm transition-all"
+              className={`absolute rounded-sm transition-all ${isGhost ? 'opacity-50' : ''} ${rainbowMode ? 'animate-pulse' : ''}`}
               style={{
                 left: segment.x * CELL_SIZE,
                 top: segment.y * CELL_SIZE,
@@ -574,8 +643,13 @@ export default function SnakeGame() {
                 height: CELL_SIZE - 2,
                 background:
                   index === 0
-                    ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))"
+                    ? rainbowMode
+                      ? "linear-gradient(135deg, #FF0080, #FF8C00, #40E0D0, #FF1493)"
+                      : "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))"
+                    : rainbowMode
+                    ? `hsl(${(index * 30) % 360}, 80%, 60%)`
                     : "hsl(var(--accent))",
+                boxShadow: isGhost ? '0 0 10px rgba(168, 85, 247, 0.5)' : rainbowMode ? '0 0 15px rgba(255, 0, 128, 0.7)' : 'none',
               }}
             />
           ))}
@@ -599,9 +673,17 @@ export default function SnakeGame() {
                 top: candy.position.y * CELL_SIZE,
                 width: CELL_SIZE,
                 height: CELL_SIZE,
+                filter: magnetActive ? 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.8))' : 'none',
               }}
             >
-              {candy.emoji}
+              <div
+                className={magnetActive ? 'animate-bounce' : ''}
+                style={{
+                  fontSize: CELL_SIZE * 0.7,
+                }}
+              >
+                {candy.emoji}
+              </div>
             </div>
           )}
 
